@@ -23,12 +23,12 @@ function initGame(images) {
     game.ui = new UI(game);
     //game.showGrid = true;
     //game.timeRenders = true;
-    
+
     //game.on('update', function () {
     //    // Update
     //});
     initWebsocket();
-    
+
     window.pause = function() { game.paused = true; };
     window.unpause = function() { game.paused = false; };
     window.game = game;
@@ -40,11 +40,11 @@ function initWebsocket() {
     var Decorator = require('./script/props/decorator.js');
     var users, world, decorator;
     var socketConfig = JSON.parse(require('fs').readFileSync('./socket-config.json'));
-    
+
     console.log('Initializing websocket on port',socketConfig.port);
-    
+
     // Swap the comments on the next 4 lines to switch between your websocket server and a virtual one
-    
+
     // TODO: We don't need websocket-stream, we can use the native browser websocket api
     var WebSocket = require('websocket-stream');
     ws = WebSocket('ws://'+socketConfig.address+':'+socketConfig.port);
@@ -68,12 +68,12 @@ function initWebsocket() {
                     if(server.password) params += '&p=' + server.password;
                     if(server.passworded) {
                         var submitPassword = function(pass) {
-                            bs.setItem('dzone-default-server',JSON.stringify({ 
+                            bs.setItem('dzone-default-server',JSON.stringify({
                                 id: server.id, password: pass
                             }));
                             server.password = pass;
                             if(window.location.protocol != 'file:') window.history.pushState(
-                                {server: server.id, password: server.password}, 
+                                {server: server.id, password: server.password},
                                 server.id, window.location.pathname + params
                             );
                             joinServer(server);
@@ -95,7 +95,7 @@ function initWebsocket() {
                     } else {
                         bs.setItem('dzone-default-server',JSON.stringify({ id: server.id }));
                         if(window.location.protocol != 'file:') window.history.pushState(
-                            {server: server.id, password: server.password}, 
+                            {server: server.id, password: server.password},
                             server.id, window.location.pathname + params
                         );
                         joinServer(server);
@@ -114,7 +114,7 @@ function initWebsocket() {
                     var server = game.servers[sKey];
                     var serverLock = game.servers[sKey].passworded ? ':icon-lock-small: ' : '';
                     button = game.ui.addButton({
-                        text: serverLock+game.servers[sKey].name, left: 5, top: 5 + serverButtonY * 21, 
+                        text: serverLock+game.servers[sKey].name, left: 5, top: 5 + serverButtonY * 21,
                         w: 136, h: 18, parent: game.serverListPanel, onPress: new joinThisServer(server)
                     });
                     widestButton = Math.max(widestButton, button.textCanvas.width + 2);
@@ -124,27 +124,33 @@ function initWebsocket() {
                 game.serverListPanel.resizeChildren(widestButton, button.h);
                 game.serverListPanel.reposition();
             } });
+            game.ui.addButton({ text: '+', w: 19, h: 18, top: 3, right: 47, onPress: function() {
+                game.emit('mousewheel', { direction: 'up' });
+            } });
+            game.ui.addButton({ text: '-', w: 19, h: 18, top: 3, right: 69, onPress: function() {
+                game.emit('mousewheel', { direction: 'down' });
+            } });
             // Help button
-            game.ui.addButton({ text: '?', bottom: 3, right: 3, w: 18, h: 18, onPress: function() {
-                if(game.helpPanel) {
-                    game.helpPanel.remove();
-                    delete game.helpPanel;
-                    return;
-                }
-                game.helpPanel = game.ui.addPanel({ left: 'auto', top: 'auto', w: 200, h: 75 });
-                game.ui.addLabel({ text: 'D-Zone '+version, top: 5, left: 'auto', parent: game.helpPanel });
-                game.ui.addLabel({
-                    text: packageInfo.description, top: 20, left: 2, maxWidth: 196, parent: game.helpPanel
-                });
-                game.ui.addLabel({ 
-                    text: ':icon-npm: View on npm', hyperlink: 'https://www.npmjs.com/package/d-zone',
-                    top: 50, left: 8, parent: game.helpPanel 
-                });
-                game.ui.addLabel({ 
-                    text: ':icon-github: View on GitHub', hyperlink: 'https://github.com/vegeta897/d-zone',
-                    top: 50, right: 8, parent: game.helpPanel 
-                });
-            }});
+            // game.ui.addButton({ text: '?', bottom: 3, right: 3, w: 18, h: 18, onPress: function() {
+            //     if(game.helpPanel) {
+            //         game.helpPanel.remove();
+            //         delete game.helpPanel;
+            //         return;
+            //     }
+            //     game.helpPanel = game.ui.addPanel({ left: 'auto', top: 'auto', w: 200, h: 75 });
+            //     game.ui.addLabel({ text: 'D-Zone '+version, top: 5, left: 'auto', parent: game.helpPanel });
+            //     game.ui.addLabel({
+            //         text: packageInfo.description, top: 20, left: 2, maxWidth: 196, parent: game.helpPanel
+            //     });
+            //     game.ui.addLabel({
+            //         text: ':icon-npm: View on npm', hyperlink: 'https://www.npmjs.com/package/d-zone',
+            //         top: 50, left: 8, parent: game.helpPanel
+            //     });
+            //     game.ui.addLabel({
+            //         text: ':icon-github: View on GitHub', hyperlink: 'https://github.com/vegeta897/d-zone',
+            //         top: 50, right: 8, parent: game.helpPanel
+            //     });
+            // }});
             var startupServer = getStartupServer();
             joinServer(startupServer);
         } else if(data.type == 'server-join') { // Initial server status
@@ -188,7 +194,7 @@ function initWebsocket() {
     ws.on('connect', function() { console.log('Websocket connected'); });
     ws.on('disconnect', function() {console.log('Websocket disconnected'); });
     ws.on('error', function(err) { console.log('error',err); });
-    
+
     window.testMessage = function(message) {
         var msg = message ? message.text : 'hello, test message yo!';
         var uid = message ? message.uid : users.actors[Object.keys(users.actors)[0]].uid;
