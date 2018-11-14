@@ -65,6 +65,7 @@ function Inbox(config) {
             if(!channel.guild) return respond(channel); // Private message
             var serverID = channel.guild.id;
             let server = self.servers.get(serverID);
+            if(channel.guild.members.get(author.id).roles.length === 0) return;
             if(!server) return;
             if(config.get('infoCommand') && config.get('url') && message === config.get('infoCommand')) return respond(channel);
             if(server.ignoreUsers && // Check if this user is ignored
@@ -82,6 +83,7 @@ function Inbox(config) {
         });
         bot.on('presenceUpdate', ({ id, status, guild }) => {
             if(!self.servers.has(guild.id)) return;
+            if(guild.members.get(id).roles.length === 0) return;
             self.emit('presence', {
                 type: 'presence', server: guild.id, data: { uid: id, status }
             });
@@ -101,6 +103,7 @@ Inbox.prototype.getUsers = function(connectRequest) {
     if(!guild) return 'unknown-server';
     let users = {};
     for(let [uid, member] of guild.members) {
+        if(member.roles.length === 0) continue;
         users[uid] = {
             id: uid,
             username: member.nick || member.username,
